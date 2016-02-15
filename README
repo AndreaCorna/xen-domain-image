@@ -1,0 +1,40 @@
+HOW TO CREATE A FULLY VIRTUALIZED DOMAIN XEN
+
+1 - Download "vmlinuz" and "initrd.gz" images from the repository of a distro that works under Xen without any problems. In folder images there are files related to Debian Squeeze distro
+
+2 - Comment the "bootloader" entry on "domain.cfg" and specify for kernel and ramdisk the path of your files downloaded before. Also specify the path for domain virtual disk. There are two possibility:
+    a - Use an LVM partition:
+    b - Use an image file:
+    
+3 - Set network.
+    There are a lot of possible configuration to add internet connection to your domain. In this example I want to set a virtual network between all domains and the host machine. The connection with internet is created using iptables and NAT.
+
+    a - set "net.ipv4.ip_forward=1" in /etc/sysctl.conf
+    b - add bridge configuration in /etc/network/interfaces
+    	auto BRIDGE_NAME
+		iface BRIDGE_NAME inet manual
+		        pre-up brctl addbr $IFACE
+		        up ip link set $IFACE up
+		        up ip addr add <IP_TO_SET>/<NETMASK> dev $IFACE (example 10.0.0.1/24)
+		        post-down brctl delbr $IFACE
+		        down ip link set $IFACE down
+
+    c - set forwarding rules
+    	iptables -A FORWARD --in-interface <BRIDGE_NAME> -j ACCEPT
+		iptables --table nat -A POSTROUTING --out-interface <EXTERNAL_INTERFACE_NAME> -j MASQUERADE
+		iptables -t nat -A PREROUTING -p udp -d <ITERNAL_NAME_RESOLVER> --dport 53 -j DNAT --to <EXTERNAL_NAME_RESOLVER>
+	Rules must be added on every reboot, or make them persistent
+    
+    ITERNAL_NAME_RESOLVER must be added in your domain /etc/resolv.conf
+
+4 - Start the domain
+
+5 - Install the OS with all you need. The dhcp will not work, so you have to specify            by hand all parameters. In particular:
+    a - ip => specify a free ip of your virtual network
+    b - netmask => specify the netmask of your virtual network
+    c - gateway => specify the address of the brigde in the host machine
+    d - nameserver => write the ITERNAL_NAME_RESOLVER
+
+6 - When the installation is finished, comment "kernel" and "ramdisk" in "domain.cfg" and uncomment "bootloader" option
+
+7 - Start the domain
