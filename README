@@ -1,6 +1,6 @@
-HOW TO CREATE A FULLY VIRTUALIZED DOMAIN XEN
+HOW TO CREATE A PARAVIRTUALIZED DOMAIN XEN
 
-1 - Download "vmlinuz" and "initrd.gz" images from the repository of a distro that works under Xen without any problems. In folder images there are files related to Debian Squeeze distro
+1 - Download "vmlinuz" and "initrd.gz" images from the repository of a distro that works under Xen without any problems. In folder images there are files related to Debian Wheezy distro (Debian 6 is no longer supported).
 
 2 - Comment the "bootloader" entry on "domain.cfg" and specify for kernel and ramdisk the path of your files downloaded before. Also specify the path for domain virtual disk. There are two possibility:
     a - Use an LVM partition:
